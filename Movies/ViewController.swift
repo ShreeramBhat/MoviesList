@@ -164,25 +164,6 @@ class ViewController: UIViewController {
         return []
     }
     
-//    func deleteAllData(entity: String) {
-//        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-//        let managedContext = appDelegate.persistentContainer.viewContext
-//        let fetchRequest = NSFetchRequest<MovieEntity>(entityName: entity)
-//        fetchRequest.returnsObjectsAsFaults = false
-//
-//        do
-//        {
-//            let results = try managedContext.execute(fetchRequest)
-//            for managedObject in results
-//            {
-//                let managedObjectData:NSManagedObject = managedObject as! NSManagedObject
-//                managedContext.deleteObject(managedObjectData)
-//            }
-//        } catch let error as NSError {
-//            print("Detele all data in \(entity) error : \(error) \(error.userInfo)")
-//        }
-//    }
-    
     func resetAllCoreData() {
         // get all entities and loop over them
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
