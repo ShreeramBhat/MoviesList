@@ -6,12 +6,12 @@
 //
 
 import UIKit
-import SDWebImage
+//import SDWebImage
 
 class MovieTableViewCell: UITableViewCell {
     
-    var firstImageView = UIImageView()
-    var secondImageView = UIImageView()
+    var firstImageView = AsyncImageView()
+    var secondImageView = AsyncImageView()
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -45,8 +45,8 @@ class MovieTableViewCell: UITableViewCell {
         stackView.spacing = 16
         stackView.distribution = .fillEqually
         
-        let firstImageView = UIImageView()
-        let secondImageView = UIImageView()
+        let firstImageView = AsyncImageView()
+        let secondImageView = AsyncImageView()
         self.firstImageView = firstImageView
         self.secondImageView = secondImageView
         
@@ -71,8 +71,14 @@ class MovieTableViewCell: UITableViewCell {
     
     func configureCell(firstPath: String, secondPath: String) {
         let prefixPath = "https://image.tmdb.org/t/p/w500"
-        self.firstImageView.sd_setImage(with: URL(string: prefixPath + firstPath))
-        self.secondImageView.sd_setImage(with: URL(string: prefixPath + secondPath))
+//        self.firstImageView.sd_setImage(with: URL(string: prefixPath + firstPath))
+//        self.secondImageView.sd_setImage(with: URL(string: prefixPath + secondPath))
+        if let firstUrl =  URL(string: prefixPath + firstPath) {
+            self.firstImageView.downLoadFrom(url: firstUrl)
+        }
+        if let secondUrl = URL(string: prefixPath + secondPath) {
+            self.secondImageView.downLoadFrom(url: secondUrl)
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

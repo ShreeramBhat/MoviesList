@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Alamofire
 import CoreData
 
 class ViewController: UIViewController {
@@ -69,13 +68,9 @@ class ViewController: UIViewController {
     }
     
     private func getImages() {
-        // "bearer "
-        
         // https://image.tmdb.org/t/p/w500/ktejodbcdCPXbMMdnpI9BUxW6O8.jpg
-        
-//        let header = ["Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1YTNjODRjOTQ3YWI1NGZhZjY1ZTM4OTQzMTNkZTM3OCIsInN1YiI6IjY0YjVmMGIyMGU0ZmM4NTFhMGY0YWQwYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zvg1q6QECQvbnUy3Ew5HZf8mGCfdmkTEFHhqIh-NbNI"]
-        
-        if !NetworkReachabilityManager()!.isReachable {
+                
+        if !Reachability.isConnectedToNetwork() {
             self.data = self.getMoviesData()
             
             self.tableView.reloadData()
@@ -86,43 +81,49 @@ class ViewController: UIViewController {
         self.currentPage = self.currentPage + 1
         
         let listType = self.toggleButton.isSelected ? "popular" : "top_rated"
-        
-//        let urlString = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=\(self.currentPage)&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200"
-        
+                
         let urlString = "https://api.themoviedb.org/3/movie/\(listType)?include_adult=false&include_video=false&language=en-US&page=\(self.currentPage)&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200"
         
+        let token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1YTNjODRjOTQ3YWI1NGZhZjY1ZTM4OTQzMTNkZTM3OCIsInN1YiI6IjY0YjVmMGIyMGU0ZmM4NTFhMGY0YWQwYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zvg1q6QECQvbnUy3Ew5HZf8mGCfdmkTEFHhqIh-NbNI"
         
-        let headers = self.headers()
+        guard let url = URL(string: urlString) else { return }
+        var request = URLRequest(url: url)
+        request.addValue( "Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let session = URLSession.shared
+        let task = session.dataTask(with: request) { data, response, error in
+            
+            if let error = error {
+                print(error)
                 
-        let request = AF.request(urlString, method: .get, parameters: nil, encoding: URLEncoding.default, headers: headers, interceptor: nil)
-        request.responseDecodable(of: Movies.self) {(resposnse) in
+                return
+            }
             
-//            let user = resposnse.value
-            print(resposnse)
+            guard let data = data else {
+                print("Empty data")
+                
+                return
+            }
             
-            self.shouldStopLoading = resposnse.value?.results.isEmpty ?? true
+            let jsonString = String(data: data, encoding: .utf8)
             
-            self.data.append(contentsOf: resposnse.value?.results ?? [])
+            print(jsonString ?? "No json string")
+            
+            let results = (try? JSONDecoder().decode(Movies.self, from: data).results) ?? []
+            
+            self.shouldStopLoading = results.isEmpty // resposnse.value?.results.isEmpty ?? true
+            
+            self.data.append(contentsOf: results)
             
             self.resetAllCoreData()
-
+            
             self.saveMoviesData(self.data)
-            
-//            let chunkedData = self.data.chunked(into: 2)
-            
-            self.tableView.reloadData()
+                        
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
-    }
-    
-    func headers() -> HTTPHeaders {
-        let headers: HTTPHeaders = [
-//            "Content-Type": "application/json",
-//            "Accept": "application/json",
-//            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1YTNjODRjOTQ3YWI1NGZhZjY1ZTM4OTQzMTNkZTM3OCIsInN1YiI6IjY0YjVmMGIyMGU0ZmM4NTFhMGY0YWQwYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zvg1q6QECQvbnUy3Ew5HZf8mGCfdmkTEFHhqIh-NbNI"
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1YTNjODRjOTQ3YWI1NGZhZjY1ZTM4OTQzMTNkZTM3OCIsInN1YiI6IjY0YjVmMGIyMGU0ZmM4NTFhMGY0YWQwYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zvg1q6QECQvbnUy3Ew5HZf8mGCfdmkTEFHhqIh-NbNI"
-        ]
-        
-        return headers
+        task.resume()
     }
     
     func saveMoviesData(_ movies: [Movie]) {
