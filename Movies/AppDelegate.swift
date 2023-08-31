@@ -5,6 +5,16 @@
 //  Created by Shreeram Bhat on 11/08/23.
 //
 
+
+
+//Things that could be improved
+//Network layer
+//Local storage class for core data
+//Better UI with navigation bar
+//Adding favourite book mark to a movie
+//More comments to explain to other developers
+//A little bit better code could have been written
+
 import UIKit
 import CoreData
 
